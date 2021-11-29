@@ -4,23 +4,20 @@ import face_recognition
 import json
 import random
 from paho.mqtt import client as mqtt_client
-import random
-
-
 
 class Scanner:
      
     def scan(self):
 
-
+        # Broker 
         broker = '192.168.10.107'
         port = 1883
         topic = "mqtt"
-        # generate client ID with pub prefix randomly
-        client_id = f'python-mqtt-{random.randint(0, 1000)}'
+        # Id for client
+        client_id = 'python-mqtt-SecuritySystem7000'
 
 
-
+        # Connect mqtt
         def connect_mqtt():
             def on_connect(client, userdata, flags, rc):
                 if rc == 0:
@@ -34,10 +31,10 @@ class Scanner:
             client.connect(broker, port)
             return client
 
-
-        def publish(client):
+        # Publishing
+        def publish(client, message):
                     
-            msg = "intruder"
+            msg = message
             result = client.publish(topic, msg)
             # result: [0, 1]
             status = result[0]
@@ -51,20 +48,21 @@ class Scanner:
         
         client = connect_mqtt()
         client.loop_start()
-        # publish(client)
        
+        # Start capturing video
         video_capture = cv2.VideoCapture(0)
+
 
         known_face_encodings = []
         known_face_names = []
        
         
-
+        # Open users.json
         with open('./users.json') as f:
             data = json.load(f)
 
            
-
+        # Initialize known faces
         for user in data['users']:
             image = face_recognition.load_image_file(user["imageUrl"])
             face_encoding = face_recognition.face_encodings(image)[0]
@@ -73,21 +71,21 @@ class Scanner:
 
        
         
-        process_this_frame = True
+        
 
+        # Send message to broker and save image of intruder locally
         def alert(image):
+            msg = "Tunkeilija havaittu"
             cv2.imwrite("intruder.jpg", image)
-            publish(client)
+            publish(client, msg)
 
             
             
             
-
-
+        # Loop through frames
+        process_this_frame = True
         while True:
 
-            
-            
             # Grab a single frame of video
             ret, frame = video_capture.read()
 
@@ -109,18 +107,13 @@ class Scanner:
                     matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
                     name = "Unknown"
 
-                    # # If a match was found in known_face_encodings, just use the first one.
-                    # if True in matches:
-                    #     first_match_index = matches.index(True)
-                    #     name = known_face_names[first_match_index]
-
                     # Or instead, use the known face with the smallest distance to the new face
                     face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
                     best_match_index = np.argmin(face_distances)
                     if matches[best_match_index]:
                         name = known_face_names[best_match_index]
                       
-                    
+                    # if not matching face send message to broker
                     else:
                         alert(frame)
                         
@@ -130,7 +123,8 @@ class Scanner:
             process_this_frame = not process_this_frame
 
 
-            # Display the results
+            # Display the results. Not necessary for this project but helps testing
+
             for (top, right, bottom, left), name in zip(face_locations, face_names):
                 # Scale back up face locations since the frame we detected in was scaled to 1/4 size
                 top *= 4
@@ -169,28 +163,31 @@ class Scanner:
             
         video_capture = cv2.VideoCapture(0)
 
-        
-
+        # Capture five images so the camera has time to open, time.sleep maybe better
         for i in range(5):
             ret, frame = video_capture.read()
-
+            
+            # not necessary
             # Resize frame of video to 1/4 size for faster face recognition processing
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
             
+        # Filename    
         imageurl = user + ".jpg"
+        # Save file
         cv2.imwrite(imageurl, small_frame)
 
         filename = '/Users/kallelehikoinen/face_recognition/face_detect/users.json'
         new_user = {"id": random.randint(1, 10000), "name": user, "imageUrl": imageurl}
-        # 1. Read file contents
+        # Read file 
         with open(filename, "r") as file:
             data = json.load(file)
-        # 2. Update json object
+        # Update json object
         data['users'].append(new_user)
-        # 3. Write json file
+        # Write json file
         with open(filename, "w") as file:
             json.dump(data, file)
+        
                     
         video_capture.release()
         cv2.destroyAllWindows()        

@@ -1,8 +1,7 @@
 import cv2
 
-
+# For testing
 class Scanner:
-
 
     def open_camera(self):
 
