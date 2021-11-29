@@ -37,6 +37,7 @@ def main():
             window.close()  
         # Registration            
         if event == 'Rekisteröidy':
+            window.close()
             layout = [[sg.Text("Nimi", font=("Helvetica", 25)), sg.InputText(size=(20,4),font=("Helvetica", 20)), sg.Button("OK", font=('Helvetica', 12), bind_return_key=True)]]
             window = sg.Window("Rekisteröidy", layout, margins=(300,150))
             event, values = window.read()

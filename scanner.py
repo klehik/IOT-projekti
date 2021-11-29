@@ -4,12 +4,13 @@ import face_recognition
 import json
 import random
 from paho.mqtt import client as mqtt_client
+import time
 
 class Scanner:
      
     def scan(self):
 
-        # Broker 
+        """ # Broker 
         broker = '192.168.10.107'
         port = 1883
         topic = "mqtt"
@@ -47,7 +48,7 @@ class Scanner:
 
         
         client = connect_mqtt()
-        client.loop_start()
+        client.loop_start() """
        
         # Start capturing video
         video_capture = cv2.VideoCapture(0)
@@ -163,13 +164,13 @@ class Scanner:
             
         video_capture = cv2.VideoCapture(0)
 
-        # Capture five images so the camera has time to open, time.sleep maybe better
-        for i in range(5):
-            ret, frame = video_capture.read()
-            
-            # not necessary
-            # Resize frame of video to 1/4 size for faster face recognition processing
-            small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+        # Sleep a bit that the camera has time to open
+        time.sleep(5)
+        ret, frame = video_capture.read()
+        
+        # not necessary
+        # Resize frame of video to 1/4 size for faster face recognition processing
+        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
             
         # Filename    
@@ -177,7 +178,7 @@ class Scanner:
         # Save file
         cv2.imwrite(imageurl, small_frame)
 
-        filename = '/Users/kallelehikoinen/face_recognition/face_detect/users.json'
+        filename = '/Users/kallelehikoinen/face_recognition/Secsystem7000/users.json'
         new_user = {"id": random.randint(1, 10000), "name": user, "imageUrl": imageurl}
         # Read file 
         with open(filename, "r") as file:
@@ -187,7 +188,7 @@ class Scanner:
         # Write json file
         with open(filename, "w") as file:
             json.dump(data, file)
-        
-                    
+
+
         video_capture.release()
-        cv2.destroyAllWindows()        
+               
