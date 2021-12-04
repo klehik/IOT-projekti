@@ -10,7 +10,7 @@ class Scanner:
      
     def scan(self):
 
-        """ # Broker 
+        # Broker 
         broker = '192.168.10.107'
         port = 1883
         topic = "mqtt"
@@ -48,7 +48,7 @@ class Scanner:
 
         
         client = connect_mqtt()
-        client.loop_start() """
+        client.loop_start() 
        
         # Start capturing video
         video_capture = cv2.VideoCapture(0)
@@ -81,7 +81,7 @@ class Scanner:
             publish(client, msg)
 
             
-            
+        first_cycle = True
             
         # Loop through frames
         process_this_frame = True
@@ -106,7 +106,7 @@ class Scanner:
                 for face_encoding in face_encodings:
                     # See if the face is a match for the known face(s)
                     matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-                    name = "Unknown"
+                    name = "Tunkeilija"
 
                     # Or instead, use the known face with the smallest distance to the new face
                     face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
@@ -142,8 +142,9 @@ class Scanner:
                 cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
             # Display the resulting image
-            cv2.imshow('Video', frame)
-            
+            if not first_cycle:
+                cv2.imshow('Video', frame)
+            first_cycle = False
 
             # Hit 'q' on the keyboard to quit!
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -178,7 +179,7 @@ class Scanner:
         # Save file
         cv2.imwrite(imageurl, small_frame)
 
-        filename = '/Users/kallelehikoinen/face_recognition/Secsystem7000/users.json'
+        filename = './users.json'
         new_user = {"id": random.randint(1, 10000), "name": user, "imageUrl": imageurl}
         # Read file 
         with open(filename, "r") as file:
